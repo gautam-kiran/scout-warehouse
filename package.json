@@ -1,0 +1,12 @@
+{
+  "name": "@warehouse/root",
+  "version": "1.0.0-SNAPSHOT",
+  "private": true,
+  "scripts": {
+    "pnpm-install": "pnpm install --ignore-scripts"
+  },
+  "dependencies": {
+    "eslint": "9.39.2",
+    "@eclipse-scout/eslint-config": "26.1.7"
+  }
+}

@@ -1,0 +1,5 @@
+ignoreScripts: true  # do not execute scripts (see https://pnpm.io/settings#ignorescripts)
+
+packages:
+- '.'
+- 'scout.warehouse.ui.html'

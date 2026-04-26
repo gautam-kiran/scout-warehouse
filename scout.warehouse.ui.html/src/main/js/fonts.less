@@ -1,0 +1,13 @@
+@font-face {
+  font-family: awesomeIcons;
+  font-weight: normal;
+  src: url('fonts/fontawesome.woff2') format('woff');
+}
+
+/* Overrides definitisons in fonts.css > .font-icon
+* Use iconId 'font:awesomeIcons [character]' in Scout model.
+* See icons.js and usage of this class to see how iconId is used.
+*/
+.font-awesomeIcons {
+  font-family: awesomeIcons, @font-default-family;
+}
