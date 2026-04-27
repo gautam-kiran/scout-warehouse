@@ -9,7 +9,7 @@ import ch.scout.warehouse.server.db.tables.article.QItem;
 import ch.scout.warehouse.server.db.tables.product.Product;
 import ch.scout.warehouse.server.db.tables.product.ProductRepository;
 import ch.scout.warehouse.server.db.tables.product.QProduct;
-import ch.scout.warehouse.server.settings.article.ItemService;
+import ch.scout.warehouse.server.settings.item.ItemService;
 import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.security.AbstractScoutWarehousePermission;
 import ch.scout.warehouse.shared.settings.product.*;

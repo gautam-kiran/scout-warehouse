@@ -1,9 +1,10 @@
-package ch.scout.warehouse.client.settings.article;
+package ch.scout.warehouse.client.settings.item;
 
-import ch.scout.warehouse.client.settings.article.ItemForm.MainBox.CancelButton;
-import ch.scout.warehouse.client.settings.article.ItemForm.MainBox.GroupBox;
-import ch.scout.warehouse.client.settings.article.ItemForm.MainBox.OkButton;
+import ch.scout.warehouse.client.settings.item.ItemForm.MainBox.CancelButton;
+import ch.scout.warehouse.client.settings.item.ItemForm.MainBox.GroupBox;
+import ch.scout.warehouse.client.settings.item.ItemForm.MainBox.OkButton;
 import ch.scout.warehouse.shared.settings.item.*;
+import ch.scout.warehouse.shared.settings.product.VariantLookupCall;
 import org.eclipse.scout.rt.client.dto.FormData;
 import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
@@ -16,6 +17,7 @@ import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
+import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
 
 @FormData(value = ItemFormData.class, sdkCommand = FormData.SdkCommand.CREATE)
 public class ItemForm extends AbstractForm {
@@ -112,6 +114,16 @@ public class ItemForm extends AbstractForm {
         @Override
         protected String getConfiguredLabel() {
           return TEXTS.get("Variant");
+        }
+
+        @Override
+        protected Class<? extends ILookupCall<Long>> getConfiguredLookupCall() {
+          return VariantLookupCall.class;
+        }
+
+        @Override
+        protected void execPrepareLookup(ILookupCall<Long> call) {
+          ((VariantLookupCall)call).setProductNr(getProductNr());
         }
       }
 

@@ -1,6 +1,6 @@
 package ch.scout.warehouse.client.settings.product;
 
-import ch.scout.warehouse.client.settings.article.ItemForm;
+import ch.scout.warehouse.client.settings.item.ItemForm;
 import ch.scout.warehouse.shared.Icons;
 import ch.scout.warehouse.shared.settings.item.ItemStatusCodeType;
 import ch.scout.warehouse.shared.settings.product.IProductService;

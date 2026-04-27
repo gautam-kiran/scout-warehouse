@@ -1,4 +1,4 @@
-package ch.scout.warehouse.server.settings.article;
+package ch.scout.warehouse.server.settings.item;
 
 import ch.scout.warehouse.server.db.DB;
 import ch.scout.warehouse.server.db.persitance.IEntityCreateService;

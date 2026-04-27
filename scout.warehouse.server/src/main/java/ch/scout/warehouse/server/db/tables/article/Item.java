@@ -1,7 +1,6 @@
 package ch.scout.warehouse.server.db.tables.article;
 
 import ch.scout.warehouse.server.db.tables.BaseEntity;
-import ch.scout.warehouse.server.settings.article.ItemService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
