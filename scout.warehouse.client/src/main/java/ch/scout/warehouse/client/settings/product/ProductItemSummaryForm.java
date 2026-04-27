@@ -1,5 +1,10 @@
 package ch.scout.warehouse.client.settings.product;
 
+import ch.scout.warehouse.client.settings.article.ItemForm;
+import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.settings.item.ItemStatusCodeType;
+import ch.scout.warehouse.shared.settings.product.IProductService;
+import ch.scout.warehouse.shared.settings.product.ProductItemSummaryFormData;
 import ch.scout.warehouse.shared.settings.product.VariantCodeType;
 import org.eclipse.scout.rt.client.dto.FormData;
 import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
@@ -15,6 +20,7 @@ import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
 import org.eclipse.scout.rt.client.ui.form.fields.groupbox.AbstractGroupBox;
 import org.eclipse.scout.rt.client.ui.form.fields.labelfield.AbstractLabelField;
 import org.eclipse.scout.rt.client.ui.form.fields.tablefield.AbstractTableField;
+import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
@@ -23,6 +29,7 @@ import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 
 import java.util.Set;
 
+@FormData(value = ProductItemSummaryFormData.class, sdkCommand = FormData.SdkCommand.CREATE)
 public class ProductItemSummaryForm extends AbstractForm {
 
   private Long productNr;
@@ -115,7 +122,6 @@ public class ProductItemSummaryForm extends AbstractForm {
         }
 
         @Order(2500)
-        @FormData(sdkCommand = FormData.SdkCommand.IGNORE)
         public class CostField extends AbstractLabelField {
           @Override
           protected String getConfiguredLabel() {
@@ -124,7 +130,6 @@ public class ProductItemSummaryForm extends AbstractForm {
         }
 
         @Order(2750)
-        @FormData(sdkCommand = FormData.SdkCommand.IGNORE)
         public class TotalCostField extends AbstractLabelField {
           @Override
           protected String getConfiguredLabel() {
@@ -252,8 +257,8 @@ public class ProductItemSummaryForm extends AbstractForm {
           @ClassId("898f1583-74df-4c74-b2f8-b5b93eb45a64")
           public class Table extends AbstractTable {
 
-            public ImtemNoColumn getImtemNoColumn() {
-              return getColumnSet().getColumnByClass(ImtemNoColumn.class);
+            public ItemNoColumn getItemNoColumn() {
+              return getColumnSet().getColumnByClass(ItemNoColumn.class);
             }
 
             public NameColumn getNameColumn() {
@@ -262,6 +267,10 @@ public class ProductItemSummaryForm extends AbstractForm {
 
             public ItemNrColumn getItemNrColumn() {
               return getColumnSet().getColumnByClass(ItemNrColumn.class);
+            }
+
+            public StatusColumn getStatusColumn() {
+              return getColumnSet().getColumnByClass(StatusColumn.class);
             }
 
             public VariantColumn getVariantColumn() {
@@ -278,7 +287,7 @@ public class ProductItemSummaryForm extends AbstractForm {
             }
 
             @Order(2000)
-            public class ImtemNoColumn extends AbstractStringColumn {
+            public class ItemNoColumn extends AbstractStringColumn {
               @Override
               protected String getConfiguredHeaderText() {
                 return TEXTS.get("ItemNo");
@@ -320,6 +329,79 @@ public class ProductItemSummaryForm extends AbstractForm {
                 return 100;
               }
             }
+
+            @Order(5000)
+            public class StatusColumn extends AbstractSmartColumn<Long> {
+              @Override
+              protected String getConfiguredHeaderText() {
+                return TEXTS.get("Status");
+              }
+
+              @Override
+              protected int getConfiguredWidth() {
+                return 100;
+              }
+
+              @Override
+              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+                return ItemStatusCodeType.class;
+              }
+            }
+
+            @Order(1000)
+            public class NewItemMenu extends AbstractMenu {
+              @Override
+              protected String getConfiguredText() {
+                return TEXTS.get("NewItem");
+              }
+
+              @Override
+              protected String getConfiguredIconId() {
+                return Icons.Add;
+              }
+
+              @Override
+              protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+                return CollectionUtility.hashSet(TableMenuType.EmptySpace);
+              }
+
+              @Override
+              protected void execAction() {
+                ItemForm form = new ItemForm();
+                form.setProductNr(getProductNr());
+                form.startNew();
+                form.waitFor();
+                getForm().doReset();
+              }
+            }
+
+            @Order(2000)
+            public class EditItemMenu extends AbstractMenu {
+              @Override
+              protected String getConfiguredText() {
+                return TEXTS.get("EditItem");
+              }
+
+              @Override
+              protected String getConfiguredIconId() {
+                return Icons.Edit;
+              }
+
+              @Override
+              protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+                return CollectionUtility.hashSet(TableMenuType.SingleSelection);
+              }
+
+              @Override
+              protected void execAction() {
+                ItemForm form = new ItemForm();
+                form.setProductNr(getProductNr());
+                form.setItemNr(getTable().getItemNrColumn().getSelectedValue());
+                form.startModify();
+                form.waitFor();
+                getForm().doReset();
+              }
+            }
           }
         }
       }
@@ -329,11 +411,10 @@ public class ProductItemSummaryForm extends AbstractForm {
   public static class FormHandler extends AbstractFormHandler {
     @Override
     protected void execLoad() {
-
-    }
-
-    @Override
-    protected void execStore() {
+      ProductItemSummaryFormData formData = new ProductItemSummaryFormData();
+      getForm().exportFormData(formData);
+      formData = BEANS.get(IProductService.class).loadItemSummary(formData);
+      getForm().importFormData(formData);
     }
   }
 }

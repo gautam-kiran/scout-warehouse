@@ -21,5 +21,6 @@ public class Icons extends AbstractIcons {
   public static final String Micorphone = "font:awesomeIcons \uf3c9";
   public static final String Export = "font:awesomeIcons \uf56e";
   public static final String Box = "font:awesomeIcons \uf1b2";
+  public static final String Reload = "font:awesomeIcons \uf01e";
 
 }

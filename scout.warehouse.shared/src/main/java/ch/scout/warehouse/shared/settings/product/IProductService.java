@@ -13,4 +13,6 @@ public interface IProductService extends ICreateService<ProductFormData>,
   IUpdateService<ProductFormData>,
   IDeleteService<Long> {
     ProductTablePageData getProductTableData(SearchFilter filter);
+
+  ProductItemSummaryFormData loadItemSummary(ProductItemSummaryFormData formData);
 }

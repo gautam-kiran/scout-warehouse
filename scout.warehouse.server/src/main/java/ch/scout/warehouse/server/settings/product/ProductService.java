@@ -5,14 +5,14 @@ import ch.scout.warehouse.server.db.persitance.IEntityCreateService;
 import ch.scout.warehouse.server.db.persitance.IEntityDeleteService;
 import ch.scout.warehouse.server.db.persitance.IEntityUpdateService;
 import ch.scout.warehouse.server.db.tables.BaseRepository;
+import ch.scout.warehouse.server.db.tables.article.QItem;
 import ch.scout.warehouse.server.db.tables.product.Product;
 import ch.scout.warehouse.server.db.tables.product.ProductRepository;
 import ch.scout.warehouse.server.db.tables.product.QProduct;
-import ch.scout.warehouse.server.db.tables.productunit.ProductUnit;
+import ch.scout.warehouse.server.settings.article.ItemService;
 import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.security.AbstractScoutWarehousePermission;
 import ch.scout.warehouse.shared.settings.product.*;
-import ch.scout.warehouse.shared.settings.user.UserTablePageData;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -22,6 +22,7 @@ import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.holders.IHolder;
 import org.eclipse.scout.rt.shared.services.common.jdbc.SearchFilter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,25 @@ public class ProductService implements IProductService,
       .fetch();
     pageData.setRows(rowData.toArray(new ProductTablePageData.ProductTableRowData[rowData.size()]));
     return pageData;
+  }
+
+  @Override
+  public ProductItemSummaryFormData loadItemSummary(ProductItemSummaryFormData formData) {
+    QItem item = new QItem("item");
+    BEANS.get(ProductRepository.class).findById(formData.getProductNr()).ifPresent(product -> {
+      formData.getName().setValue(product.getName());
+      formData.getCost().setValue(product.getCost() + " CHF");
+      Long amount = queryFactory.select(item.itemNr.count())
+        .from(item)
+        .where(
+          item.productNr.eq(formData.getProductNr())
+            .and(item.statusUid.eq(StatusCodeType.ActiveCode.ID))
+        ).fetchFirst();
+      formData.getAmout().setValue(String.valueOf(amount));
+      formData.getTotalCost().setValue(product.getCost().multiply(BigDecimal.valueOf(amount)) + " CHF");
+    });
+    BEANS.get(ItemService.class).loadTablePage(formData.getItemTable(), formData.getProductNr());
+    return formData;
   }
 
   @Override
