@@ -5,9 +5,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+import java.math.BigDecimal;
+
 @Getter
 @Setter
+@Entity
 @Table(name = Product.NativeNames.PRODUCT)
 public class Product extends BaseEntity {
 
@@ -19,9 +21,13 @@ public class Product extends BaseEntity {
   @Column(name = NativeNames.NAME)
   public String name;
 
+  @Column(name = NativeNames.COST)
+  public BigDecimal cost;
+
   public static class NativeNames {
     public static final String PRODUCT = "PRODUCT";
     public static final String PRODUCT_NR = "PRODUCT_NR";
     public static final String NAME = "NAME";
+    public static final String COST = "COST";
   }
 }

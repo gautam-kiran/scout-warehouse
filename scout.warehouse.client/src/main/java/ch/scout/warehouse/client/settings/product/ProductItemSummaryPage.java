@@ -8,7 +8,7 @@ public class ProductItemSummaryPage extends AbstractPageWithNodes {
 
   @Override
   protected Class<? extends IForm> getConfiguredDetailForm() {
-    return ProdcutItemSummaryForm.class;
+    return ProductItemSummaryForm.class;
   }
 
   public Long getProductNr() {
@@ -21,8 +21,8 @@ public class ProductItemSummaryPage extends AbstractPageWithNodes {
 
   @Override
   protected void execInitDetailForm() {
-    ProdcutItemSummaryForm form = (ProdcutItemSummaryForm) getDetailForm();
+    ProductItemSummaryForm form = (ProductItemSummaryForm) getDetailForm();
     form.setProductNr(productNr);
-    form.setHandler(new ProdcutItemSummaryForm.FormHandler());
+    form.setHandler(new ProductItemSummaryForm.FormHandler());
   }
 }

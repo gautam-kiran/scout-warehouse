@@ -5,7 +5,7 @@ import org.eclipse.scout.rt.platform.text.TEXTS;
 
 public class VariantCodeType extends AbstractSqlCodeType {
     private static final long serialVersionUID = 1L;
-    public static final long ID = 0L;
+    public static final long ID = 300;
 
     @Override
     public Long getId() {

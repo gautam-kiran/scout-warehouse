@@ -5,15 +5,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.scout.rt.platform.ApplicationScoped;
 
 import java.util.Date;
 
 @Setter
 @Getter
-@ApplicationScoped
 @MappedSuperclass
-public abstract class BaseEntity {
+public abstract class BaseEntity implements IBaseEntity {
 
   @Column(name = NativeNames.STATUS_UID)
   public Long statusUid = StatusCodeType.ActiveCode.ID;

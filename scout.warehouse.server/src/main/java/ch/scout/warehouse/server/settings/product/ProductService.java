@@ -8,6 +8,7 @@ import ch.scout.warehouse.server.db.tables.BaseRepository;
 import ch.scout.warehouse.server.db.tables.product.Product;
 import ch.scout.warehouse.server.db.tables.product.ProductRepository;
 import ch.scout.warehouse.server.db.tables.product.QProduct;
+import ch.scout.warehouse.server.db.tables.productunit.ProductUnit;
 import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.security.AbstractScoutWarehousePermission;
 import ch.scout.warehouse.shared.settings.product.*;
@@ -47,6 +48,36 @@ public class ProductService implements IProductService,
   }
 
   @Override
+  public ProductFormData prepareCreateImpl(ProductFormData formData, Product entity) {
+    BEANS.get(ProductUnitService.class).preapareCreate(formData);
+    BEANS.get(ProductVariantService.class).preapareCreate(formData);
+    return IEntityCreateService.super.prepareCreateImpl(formData, entity);
+  }
+
+  @Override
+  public Product createImpl(ProductFormData formData, Product entity) {
+    Product product = IEntityCreateService.super.createImpl(formData, entity);
+    formData.setProductNr(product.getProductNr());
+    BEANS.get(ProductUnitService.class).create(formData);
+    BEANS.get(ProductVariantService.class).create(formData);
+    return product;
+  }
+
+  @Override
+  public Product loadImpl(ProductFormData formData) {
+    BEANS.get(ProductUnitService.class).load(formData);
+    BEANS.get(ProductVariantService.class).load(formData);
+    return IEntityUpdateService.super.loadImpl(formData);
+  }
+
+  @Override
+  public Product storeImpl(Product entity, ProductFormData formData) {
+    BEANS.get(ProductUnitService.class).store(formData);
+    BEANS.get(ProductVariantService.class).store(formData);
+    return IEntityUpdateService.super.storeImpl(entity, formData);
+  }
+
+  @Override
   public AbstractScoutWarehousePermission getConfiguredCreatePermission() {
     return new CreateProductPermission();
   }
@@ -70,7 +101,8 @@ public class ProductService implements IProductService,
   public BidiMap<Class<? extends IHolder<?>>, String> getConfiguredEntityMapping() {
     return new DualHashBidiMap<>(Map.of(
       ProductFormData.ProductNrProperty.class, Product.NativeNames.PRODUCT_NR,
-      ProductFormData.Name.class, Product.NativeNames.NAME
+      ProductFormData.Name.class, Product.NativeNames.NAME,
+      ProductFormData.Cost.class, Product.NativeNames.COST
     ));
   }
 }

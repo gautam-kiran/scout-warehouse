@@ -4,6 +4,7 @@ import ch.scout.warehouse.client.settings.product.ProductForm.MainBox.CancelButt
 import ch.scout.warehouse.client.settings.product.ProductForm.MainBox.GroupBox;
 import ch.scout.warehouse.client.settings.product.ProductForm.MainBox.OkButton;
 import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.settings.product.*;
 import org.eclipse.scout.rt.client.dto.FormData;
 import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
@@ -12,9 +13,9 @@ import org.eclipse.scout.rt.client.ui.action.menu.TableMenuType;
 import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
-import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
 import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
+import org.eclipse.scout.rt.client.ui.form.fields.bigdecimalfield.AbstractBigDecimalField;
 import org.eclipse.scout.rt.client.ui.form.fields.button.AbstractCancelButton;
 import org.eclipse.scout.rt.client.ui.form.fields.button.AbstractOkButton;
 import org.eclipse.scout.rt.client.ui.form.fields.groupbox.AbstractGroupBox;
@@ -28,6 +29,7 @@ import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
 import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @FormData(value = ProductFormData.class, sdkCommand = FormData.SdkCommand.CREATE)
@@ -63,6 +65,10 @@ public class ProductForm extends AbstractForm {
 
   public CancelButton getCancelButton() {
     return getFieldByClass(CancelButton.class);
+  }
+
+  public GroupBox.ProductDetailBox.CostField getCostField() {
+    return getFieldByClass(GroupBox.ProductDetailBox.CostField.class);
   }
 
   public GroupBox.ProductDetailBox.NameField getNameField() {
@@ -115,6 +121,24 @@ public class ProductForm extends AbstractForm {
           }
         }
 
+        @Order(1500)
+        public class CostField extends AbstractBigDecimalField {
+          @Override
+          protected String getConfiguredLabel() {
+            return TEXTS.get("Price");
+          }
+
+          @Override
+          protected BigDecimal getConfiguredMinValue() {
+            return new BigDecimal("0");
+          }
+
+          @Override
+          protected BigDecimal getConfiguredMaxValue() {
+            return new BigDecimal("999999999999999999");
+          }
+        }
+
         @Order(2000)
         public class UnitsField extends AbstractTableField<UnitsField.Table> {
           @Override
@@ -141,6 +165,10 @@ public class ProductForm extends AbstractForm {
 
             public ProductUnitNrColumn getProductUnitNrColumn() {
               return getColumnSet().getColumnByClass(ProductUnitNrColumn.class);
+            }
+
+            public StatusColumn getStatusColumn() {
+              return getColumnSet().getColumnByClass(StatusColumn.class);
             }
 
             public UnitColumn getUnitColumn() {
@@ -196,6 +224,19 @@ public class ProductForm extends AbstractForm {
               }
             }
 
+            @Order(4000)
+            public class StatusColumn extends AbstractSmartColumn<Long> {
+              @Override
+              protected boolean getConfiguredDisplayable() {
+                return false;
+              }
+
+              @Override
+              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+                return StatusCodeType.class;
+              }
+            }
+
 
             @Order(1000)
             public class NewUnitMenu extends AbstractMenu {
@@ -216,7 +257,7 @@ public class ProductForm extends AbstractForm {
 
               @Override
               protected void execAction() {
-                getTable().addRow();
+                getStatusColumn().setValue(getTable().addRow(), StatusCodeType.ActiveCode.ID);
               }
             }
 
@@ -239,6 +280,7 @@ public class ProductForm extends AbstractForm {
 
               @Override
               protected void execAction() {
+                getTable().getSelectedRows().forEach(row -> getTable().getStatusColumn().setValue(row, StatusCodeType.DeletedCode.ID));
                 getTable().deleteRows(getTable().getSelectedRows());
               }
             }
@@ -278,12 +320,16 @@ public class ProductForm extends AbstractForm {
               return getColumnSet().getColumnByClass(NameColumn.class);
             }
 
-            public ProductVariantColumn getProductVariantColumn() {
-              return getColumnSet().getColumnByClass(ProductVariantColumn.class);
+            public ProductVariantNrColumn getProductVariantNrColumn() {
+              return getColumnSet().getColumnByClass(ProductVariantNrColumn.class);
+            }
+
+            public StatusColumn getStatusColumn() {
+              return getColumnSet().getColumnByClass(StatusColumn.class);
             }
 
             @Order(1000)
-            public class ProductVariantColumn extends AbstractLongColumn {
+            public class ProductVariantNrColumn extends AbstractLongColumn {
 
               @Override
               protected boolean getConfiguredDisplayable() {
@@ -304,8 +350,26 @@ public class ProductForm extends AbstractForm {
               }
 
               @Override
+              protected boolean getConfiguredEditable() {
+                return true;
+              }
+
+              @Override
               protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
                 return VariantCodeType.class;
+              }
+            }
+
+            @Order(3000)
+            public class StatusColumn extends AbstractSmartColumn<Long> {
+              @Override
+              protected boolean getConfiguredDisplayable() {
+                return false;
+              }
+
+              @Override
+              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+                return StatusCodeType.class;
               }
             }
 
@@ -328,7 +392,7 @@ public class ProductForm extends AbstractForm {
 
               @Override
               protected void execAction() {
-                getTable().addRow();
+                getStatusColumn().setValue(getTable().addRow(), StatusCodeType.ActiveCode.ID);
               }
             }
 
@@ -351,6 +415,7 @@ public class ProductForm extends AbstractForm {
 
               @Override
               protected void execAction() {
+                getTable().getSelectedRows().forEach(row -> getTable().getStatusColumn().setValue(row, StatusCodeType.DeletedCode.ID));
                 getTable().deleteRows(getTable().getSelectedRows());
               }
             }

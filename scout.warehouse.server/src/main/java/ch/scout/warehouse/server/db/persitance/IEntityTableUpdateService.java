@@ -3,12 +3,13 @@ package ch.scout.warehouse.server.db.persitance;
 import ch.scout.warehouse.server.db.tables.BaseEntity;
 import ch.scout.warehouse.server.db.tables.BaseRepository;
 import org.apache.commons.collections4.BidiMap;
+import org.eclipse.scout.rt.platform.service.IService;
 import org.eclipse.scout.rt.shared.data.form.AbstractFormData;
 import org.eclipse.scout.rt.shared.data.form.fields.tablefield.AbstractTableFieldBeanData;
 
 import java.util.List;
 
-public interface IEntityTableUpdateService<E extends BaseEntity,F extends AbstractFormData, T extends AbstractTableFieldBeanData, ID> {
+public interface IEntityTableUpdateService<E extends BaseEntity,F extends AbstractFormData, T extends AbstractTableFieldBeanData, ID>  extends IService {
 
   default T load(F formData) {
     List<E> entities = loadImpl(formData);

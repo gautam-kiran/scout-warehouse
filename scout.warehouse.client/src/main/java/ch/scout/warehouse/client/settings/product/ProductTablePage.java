@@ -1,7 +1,9 @@
 package ch.scout.warehouse.client.settings.product;
 
+import ch.scout.warehouse.client.common.AbstractExportTable;
 import ch.scout.warehouse.client.settings.product.ProductTablePage.Table;
 import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.settings.product.IProductService;
 import ch.scout.warehouse.shared.settings.product.ProductTablePageData;
 import org.eclipse.scout.rt.client.dto.Data;
@@ -14,6 +16,8 @@ import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
 import org.eclipse.scout.rt.client.ui.desktop.outline.pages.AbstractPageWithTable;
 import org.eclipse.scout.rt.client.ui.desktop.outline.pages.IPage;
+import org.eclipse.scout.rt.client.ui.messagebox.IMessageBox;
+import org.eclipse.scout.rt.client.ui.messagebox.MessageBoxes;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.text.TEXTS;
@@ -52,7 +56,15 @@ public class ProductTablePage extends AbstractPageWithTable<Table> {
     return page;
   }
 
-  public class Table extends AbstractTable {
+  public class Table extends AbstractExportTable {
+
+    public AmountColumn getAmountColumn() {
+      return getColumnSet().getColumnByClass(AmountColumn.class);
+    }
+
+    public CostColumn getCostColumn() {
+      return getColumnSet().getColumnByClass(CostColumn.class);
+    }
 
     public NameColumn getNameColumn() {
       return getColumnSet().getColumnByClass(NameColumn.class);
@@ -76,6 +88,32 @@ public class ProductTablePage extends AbstractPageWithTable<Table> {
       @Override
       protected String getConfiguredHeaderText() {
         return TEXTS.get("Name");
+      }
+
+      @Override
+      protected int getConfiguredWidth() {
+        return 100;
+      }
+    }
+
+    @Order(3000)
+    public class AmountColumn extends AbstractLongColumn {
+      @Override
+      protected String getConfiguredHeaderText() {
+        return TEXTS.get("Amount");
+      }
+
+      @Override
+      protected int getConfiguredWidth() {
+        return 100;
+      }
+    }
+
+    @Order(4000)
+    public class CostColumn extends AbstractLongColumn {
+      @Override
+      protected String getConfiguredHeaderText() {
+        return TEXTS.get("Value");
       }
 
       @Override
@@ -156,7 +194,11 @@ public class ProductTablePage extends AbstractPageWithTable<Table> {
 
       @Override
       protected void execAction() {
-        BEANS.get(IProductService.class);
+        int result = MessageBoxes.createDeleteConfirmationMessage(getSelectedRows()).show();
+        if (result == IMessageBox.YES_OPTION) {
+          BEANS.get(IProductService.class).updateStatus(getTable().getProductNrColumn().getSelectedValues(), StatusCodeType.DeletedCode.ID);
+          reloadPage();
+        }
       }
     }
   }

@@ -14,8 +14,6 @@ import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
 import org.eclipse.scout.rt.client.ui.form.fields.groupbox.AbstractGroupBox;
 import org.eclipse.scout.rt.client.ui.form.fields.labelfield.AbstractLabelField;
-import org.eclipse.scout.rt.client.ui.form.fields.longfield.AbstractLongField;
-import org.eclipse.scout.rt.client.ui.form.fields.stringfield.AbstractStringField;
 import org.eclipse.scout.rt.client.ui.form.fields.tablefield.AbstractTableField;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
@@ -25,12 +23,16 @@ import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 
 import java.util.Set;
 
-public class ProdcutItemSummaryForm extends AbstractForm {
+public class ProductItemSummaryForm extends AbstractForm {
 
   private Long productNr;
 
   public MainBox.GroupBox.DetailBox.AmoutField getAmoutField() {
     return getFieldByClass(MainBox.GroupBox.DetailBox.AmoutField.class);
+  }
+
+  public MainBox.GroupBox.DetailBox.CostField getCostField() {
+    return getFieldByClass(MainBox.GroupBox.DetailBox.CostField.class);
   }
 
   public MainBox.GroupBox.DetailBox getDetailBox() {
@@ -51,6 +53,10 @@ public class ProdcutItemSummaryForm extends AbstractForm {
 
   public MainBox.GroupBox.DetailBox.OrdersField getOrdersField() {
     return getFieldByClass(MainBox.GroupBox.DetailBox.OrdersField.class);
+  }
+
+  public MainBox.GroupBox.DetailBox.TotalCostField getTotalCostField() {
+    return getFieldByClass(MainBox.GroupBox.DetailBox.TotalCostField.class);
   }
 
   @FormData
@@ -106,6 +112,24 @@ public class ProdcutItemSummaryForm extends AbstractForm {
             return TEXTS.get("Amount");
           }
 
+        }
+
+        @Order(2500)
+        @FormData(sdkCommand = FormData.SdkCommand.IGNORE)
+        public class CostField extends AbstractLabelField {
+          @Override
+          protected String getConfiguredLabel() {
+            return TEXTS.get("Value");
+          }
+        }
+
+        @Order(2750)
+        @FormData(sdkCommand = FormData.SdkCommand.IGNORE)
+        public class TotalCostField extends AbstractLabelField {
+          @Override
+          protected String getConfiguredLabel() {
+            return TEXTS.get("TotalValue");
+          }
         }
 
         @Order(3000)

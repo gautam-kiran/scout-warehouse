@@ -50,8 +50,12 @@ public class ProductTablePageData extends AbstractTablePageData {
         private static final long serialVersionUID = 1L;
         public static final String productNr = "productNr";
         public static final String name = "name";
+        public static final String amount = "amount";
+        public static final String cost = "cost";
         private Long m_productNr;
         private String m_name;
+        private Long m_amount;
+        private Long m_cost;
 
         public Long getProductNr() {
             return m_productNr;
@@ -67,6 +71,22 @@ public class ProductTablePageData extends AbstractTablePageData {
 
         public void setName(String newName) {
             m_name = newName;
+        }
+
+        public Long getAmount() {
+            return m_amount;
+        }
+
+        public void setAmount(Long newAmount) {
+            m_amount = newAmount;
+        }
+
+        public Long getCost() {
+            return m_cost;
+        }
+
+        public void setCost(Long newCost) {
+            m_cost = newCost;
         }
     }
 }
