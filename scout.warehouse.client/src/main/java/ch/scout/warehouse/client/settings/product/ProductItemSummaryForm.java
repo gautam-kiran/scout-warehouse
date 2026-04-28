@@ -1,11 +1,10 @@
 package ch.scout.warehouse.client.settings.product;
 
+import ch.scout.warehouse.client.settings.item.AbstractItemTable;
 import ch.scout.warehouse.client.settings.item.ItemForm;
 import ch.scout.warehouse.shared.Icons;
-import ch.scout.warehouse.shared.settings.item.ItemStatusCodeType;
 import ch.scout.warehouse.shared.settings.product.IProductService;
 import ch.scout.warehouse.shared.settings.product.ProductItemSummaryFormData;
-import ch.scout.warehouse.shared.settings.product.VariantCodeType;
 import org.eclipse.scout.rt.client.dto.FormData;
 import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
 import org.eclipse.scout.rt.client.ui.action.menu.IMenuType;
@@ -14,7 +13,6 @@ import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractDateColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
-import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
 import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
 import org.eclipse.scout.rt.client.ui.form.fields.groupbox.AbstractGroupBox;
@@ -25,7 +23,6 @@ import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
-import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 
 import java.util.Set;
 
@@ -255,98 +252,7 @@ public class ProductItemSummaryForm extends AbstractForm {
           }
 
           @ClassId("898f1583-74df-4c74-b2f8-b5b93eb45a64")
-          public class Table extends AbstractTable {
-
-            public ItemNoColumn getItemNoColumn() {
-              return getColumnSet().getColumnByClass(ItemNoColumn.class);
-            }
-
-            public DescriptionColumn getDescriptionColumn() {
-              return getColumnSet().getColumnByClass(DescriptionColumn.class);
-            }
-
-            public ItemNrColumn getItemNrColumn() {
-              return getColumnSet().getColumnByClass(ItemNrColumn.class);
-            }
-
-            public StatusColumn getStatusColumn() {
-              return getColumnSet().getColumnByClass(StatusColumn.class);
-            }
-
-            public VariantColumn getVariantColumn() {
-              return getColumnSet().getColumnByClass(VariantColumn.class);
-            }
-
-            @Order(1000)
-            public class ItemNrColumn extends AbstractLongColumn {
-
-              @Override
-              protected boolean getConfiguredDisplayable() {
-                return false;
-              }
-            }
-
-            @Order(2000)
-            public class ItemNoColumn extends AbstractStringColumn {
-              @Override
-              protected String getConfiguredHeaderText() {
-                return TEXTS.get("ItemNo");
-              }
-
-              @Override
-              protected int getConfiguredWidth() {
-                return 100;
-              }
-            }
-
-            @Order(3000)
-            public class DescriptionColumn extends AbstractStringColumn {
-              @Override
-              protected String getConfiguredHeaderText() {
-                return TEXTS.get("Description");
-              }
-
-              @Override
-              protected int getConfiguredWidth() {
-                return 100;
-              }
-            }
-
-            @Order(4000)
-            public class VariantColumn extends AbstractSmartColumn<Long> {
-              @Override
-              protected String getConfiguredHeaderText() {
-                return TEXTS.get("Variant");
-              }
-
-              @Override
-              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
-                return VariantCodeType.class;
-              }
-
-              @Override
-              protected int getConfiguredWidth() {
-                return 100;
-              }
-            }
-
-            @Order(5000)
-            public class StatusColumn extends AbstractSmartColumn<Long> {
-              @Override
-              protected String getConfiguredHeaderText() {
-                return TEXTS.get("Status");
-              }
-
-              @Override
-              protected int getConfiguredWidth() {
-                return 100;
-              }
-
-              @Override
-              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
-                return ItemStatusCodeType.class;
-              }
-            }
+          public class Table extends AbstractItemTable {
 
             @Order(1000)
             public class NewItemMenu extends AbstractMenu {
