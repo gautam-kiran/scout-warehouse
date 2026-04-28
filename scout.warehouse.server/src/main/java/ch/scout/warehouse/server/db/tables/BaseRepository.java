@@ -20,7 +20,7 @@ import java.util.*;
 
 
 @ApplicationScoped
-public abstract class BaseRepository<E extends BaseEntity, ID> {
+public abstract class BaseRepository<E extends IBaseEntity, ID> {
 
   Logger LOG = LoggerFactory.getLogger(BaseRepository.class);
 

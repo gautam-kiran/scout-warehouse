@@ -1,6 +1,7 @@
 package ch.scout.warehouse.server.db.tables.userrole;
 
 import ch.scout.warehouse.server.db.tables.BaseEntity;
+import ch.scout.warehouse.server.db.tables.IBaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Table(name = UserRole.NativeNames.PERSON_ROLE)
 @IdClass(UserRoleKey.class)
-public class UserRole extends BaseEntity {
+public class UserRole implements IBaseEntity {
 
   @Id
   @Column(name = NativeNames.USER_NR, insertable = false, updatable = false)

@@ -32,6 +32,11 @@ public class LanguageCodeType extends AbstractCodeTypeWithGeneric<Long, Long, Ab
 
 
     @Override
+    protected String getConfiguredExtKey() {
+      return Locale.GERMAN.getLanguage();
+    }
+
+    @Override
     public Locale getConfiguredLocale() {
       return Locale.GERMAN;
     }
@@ -50,6 +55,11 @@ public class LanguageCodeType extends AbstractCodeTypeWithGeneric<Long, Long, Ab
     @Override
     public Long getId() {
       return ID;
+    }
+
+    @Override
+    protected String getConfiguredExtKey() {
+      return Locale.ENGLISH.getLanguage();
     }
 
     @Override
