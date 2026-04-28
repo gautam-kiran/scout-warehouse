@@ -11,8 +11,10 @@ import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
 import org.eclipse.scout.rt.client.ui.action.menu.IMenuType;
 import org.eclipse.scout.rt.client.ui.action.menu.TableMenuType;
 import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
+import org.eclipse.scout.rt.client.ui.basic.table.ITableRow;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
+import org.eclipse.scout.rt.client.ui.basic.table.columns.IColumn;
 import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
 import org.eclipse.scout.rt.client.ui.form.fields.bigdecimalfield.AbstractBigDecimalField;
@@ -25,6 +27,8 @@ import org.eclipse.scout.rt.client.ui.form.fields.tablefield.AbstractTableField;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
+import org.eclipse.scout.rt.platform.exception.VetoException;
+import org.eclipse.scout.rt.platform.html.HTML;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
 import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
@@ -118,6 +122,11 @@ public class ProductForm extends AbstractForm {
           @Override
           protected int getConfiguredMaxLength() {
             return 128;
+          }
+
+          @Override
+          protected boolean getConfiguredMandatory() {
+            return true;
           }
         }
 
@@ -432,6 +441,35 @@ public class ProductForm extends AbstractForm {
     @Order(3000)
     public class CancelButton extends AbstractCancelButton {
 
+    }
+  }
+
+  @Override
+  public void validateForm() {
+    super.validateForm();
+  }
+
+  @Override
+  protected boolean execValidate() {
+    if (getUnitsField().getTable().getRowCount() > 0) {
+      getUnitsField().getTable().getRows().forEach(row -> {
+        validateCell(getUnitsField().getTable().getUnitColumn(), row);
+        validateCell(getUnitsField().getTable().getAmountColumn(), row);
+      });
+    }
+    if (getVariantField().getTable().getRowCount() > 0) {
+      getVariantField().getTable().getRows().forEach(row -> {
+        validateCell(getVariantField().getTable().getNameColumn(), row);
+      });
+    }
+    return true;
+  }
+
+  private void validateCell(IColumn<?> column, ITableRow row) {
+    if (column.getValue(row) == null) {
+      throw new VetoException()
+        .withTitle(TEXTS.get("FormValidationFailedTitle"))
+        .withHtmlMessage(HTML.fragment(TEXTS.get("InvalidFields"), column.getHeaderCell().getText()));
     }
   }
 

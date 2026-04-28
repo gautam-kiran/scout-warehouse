@@ -261,8 +261,8 @@ public class ProductItemSummaryForm extends AbstractForm {
               return getColumnSet().getColumnByClass(ItemNoColumn.class);
             }
 
-            public NameColumn getNameColumn() {
-              return getColumnSet().getColumnByClass(NameColumn.class);
+            public DescriptionColumn getDescriptionColumn() {
+              return getColumnSet().getColumnByClass(DescriptionColumn.class);
             }
 
             public ItemNrColumn getItemNrColumn() {
@@ -300,10 +300,10 @@ public class ProductItemSummaryForm extends AbstractForm {
             }
 
             @Order(3000)
-            public class NameColumn extends AbstractStringColumn {
+            public class DescriptionColumn extends AbstractStringColumn {
               @Override
               protected String getConfiguredHeaderText() {
-                return TEXTS.get("Name");
+                return TEXTS.get("Description");
               }
 
               @Override

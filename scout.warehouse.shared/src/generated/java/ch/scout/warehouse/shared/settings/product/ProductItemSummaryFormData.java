@@ -108,12 +108,12 @@ public class ProductItemSummaryFormData extends AbstractFormData {
             private static final long serialVersionUID = 1L;
             public static final String itemNr = "itemNr";
             public static final String itemNo = "itemNo";
-            public static final String name = "name";
+            public static final String description = "description";
             public static final String variant = "variant";
             public static final String status = "status";
             private Long m_itemNr;
             private String m_itemNo;
-            private String m_name;
+            private String m_description;
             private Long m_variant;
             private Long m_status;
 
@@ -133,12 +133,12 @@ public class ProductItemSummaryFormData extends AbstractFormData {
                 m_itemNo = newItemNo;
             }
 
-            public String getName() {
-                return m_name;
+            public String getDescription() {
+                return m_description;
             }
 
-            public void setName(String newName) {
-                m_name = newName;
+            public void setDescription(String newDescription) {
+                m_description = newDescription;
             }
 
             public Long getVariant() {

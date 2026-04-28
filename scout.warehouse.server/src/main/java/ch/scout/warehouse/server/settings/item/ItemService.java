@@ -68,7 +68,7 @@ public class ItemService implements
         ProductItemSummaryFormData.ItemTable.ItemTableRowData.class,
         item.itemNr.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.itemNr),
         item.itemNo.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.itemNo),
-        item.description.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.name),
+        item.description.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.description),
         item.variantNr.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.variant),
         item.status.as("m_" + ProductItemSummaryFormData.ItemTable.ItemTableRowData.status)
       ))

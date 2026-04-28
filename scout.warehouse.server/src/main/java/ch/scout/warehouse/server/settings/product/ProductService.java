@@ -25,6 +25,7 @@ import org.eclipse.scout.rt.shared.services.common.jdbc.SearchFilter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ProductService implements IProductService,
   IEntityCreateService<Product, ProductFormData, Long>,
@@ -36,13 +37,18 @@ public class ProductService implements IProductService,
   public ProductTablePageData getProductTableData(SearchFilter filter) {
     ProductTablePageData pageData = new ProductTablePageData();
     QProduct product = new QProduct("product");
+    QItem item = new QItem("item");
     List<ProductTablePageData.ProductTableRowData> rowData = queryFactory.select(Projections.fields(
         ProductTablePageData.ProductTableRowData.class,
         product.productNr.as("m_" + ProductTablePageData.ProductTableRowData.productNr),
-        product.name.as("m_" + ProductTablePageData.ProductTableRowData.name)
+        product.name.as("m_" + ProductTablePageData.ProductTableRowData.name),
+        item.itemNr.count().as("m_" + ProductTablePageData.ProductTableRowData.amount),
+        item.itemNr.count().multiply(product.cost.coalesce(BigDecimal.ZERO)).as("m_" + ProductTablePageData.ProductTableRowData.cost)
       ))
       .from(product)
+      .leftJoin(item).on(product.productNr.eq(item.productNr).and(item.statusUid.eq(StatusCodeType.ActiveCode.ID)))
       .where(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
+      .groupBy(product.productNr, product.name)
       .fetch();
     pageData.setRows(rowData.toArray(new ProductTablePageData.ProductTableRowData[rowData.size()]));
     return pageData;
@@ -53,7 +59,8 @@ public class ProductService implements IProductService,
     QItem item = new QItem("item");
     BEANS.get(ProductRepository.class).findById(formData.getProductNr()).ifPresent(product -> {
       formData.getName().setValue(product.getName());
-      formData.getCost().setValue(product.getCost() + " CHF");
+      BigDecimal cost = Objects.requireNonNullElse(product.getCost(),BigDecimal.ZERO);
+      formData.getCost().setValue(cost + " CHF");
       Long amount = queryFactory.select(item.itemNr.count())
         .from(item)
         .where(
@@ -61,7 +68,7 @@ public class ProductService implements IProductService,
             .and(item.statusUid.eq(StatusCodeType.ActiveCode.ID))
         ).fetchFirst();
       formData.getAmout().setValue(String.valueOf(amount));
-      formData.getTotalCost().setValue(product.getCost().multiply(BigDecimal.valueOf(amount)) + " CHF");
+      formData.getTotalCost().setValue(BigDecimal.valueOf(amount).multiply(cost) + " CHF");
     });
     BEANS.get(ItemService.class).loadTablePage(formData.getItemTable(), formData.getProductNr());
     return formData;
