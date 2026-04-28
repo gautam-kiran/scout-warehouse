@@ -5,14 +5,12 @@ import ch.scout.warehouse.server.db.persitance.IEntityCreateService;
 import ch.scout.warehouse.server.db.persitance.IEntityDeleteService;
 import ch.scout.warehouse.server.db.persitance.IEntityUpdateService;
 import ch.scout.warehouse.server.db.tables.BaseRepository;
-import ch.scout.warehouse.server.db.tables.article.Item;
 import ch.scout.warehouse.server.db.tables.order.Order;
 import ch.scout.warehouse.server.db.tables.order.OrderRepository;
 import ch.scout.warehouse.server.db.tables.order.QOrder;
+import ch.scout.warehouse.server.settings.user.UserService;
 import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.security.AbstractScoutWarehousePermission;
-import ch.scout.warehouse.shared.settings.item.ItemFormData;
-import ch.scout.warehouse.shared.settings.product.ProductItemSummaryFormData;
 import ch.scout.warehouse.shared.work.order.*;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLTemplates;
@@ -22,7 +20,13 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.holders.IHolder;
 import org.eclipse.scout.rt.shared.services.common.jdbc.SearchFilter;
+import org.eclipse.scout.rt.shared.user.UserId;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +52,7 @@ public class OrderService implements
       ))
       .from(order)
       .where(
-          order.statusUid.eq(StatusCodeType.ActiveCode.ID)
+        order.statusUid.eq(StatusCodeType.ActiveCode.ID)
       )
       .fetch();
     pageData.setRows(rowData.toArray(new OrderTablePageData.OrderTableRowData[rowData.size()]));
@@ -57,12 +61,16 @@ public class OrderService implements
 
   @Override
   public OrderFormData prepareCreateImpl(OrderFormData formData, Order entity) {
+    LocalDate nextSaturday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+    Date dateNextSaturday = Date.from(nextSaturday.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    formData.getOrderDate().setValue(dateNextSaturday);
     BEANS.get(OrderItemService.class).preapareCreate(formData);
     return IEntityCreateService.super.prepareCreateImpl(formData, entity);
   }
 
   @Override
   public Order createImpl(OrderFormData formData, Order entity) {
+    entity.setUserNr(BEANS.get(UserService.class).getUserNrByUsername(UserId.CURRENT.get()));
     BEANS.get(OrderItemService.class).create(formData);
     return IEntityCreateService.super.createImpl(formData, entity);
   }
