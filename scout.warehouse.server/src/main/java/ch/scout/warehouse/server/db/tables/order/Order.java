@@ -10,7 +10,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@Table(name = Order.NativeNames.ORDER)
+@Table(name = Order.NativeNames.ORDERS)
 public class Order extends BaseEntity {
 
   @Id
@@ -35,7 +35,7 @@ public class Order extends BaseEntity {
   public Long userNr;
 
   public static class NativeNames {
-    public static final String ORDER = "ORDER";
+    public static final String ORDERS = "ORDERS";
     public static final String ORDER_NR = "ORDER_NR";
     public static final String TITLE = "TITLE";
     public static final String EVT_ORDER = "EVT_ORDER";
