@@ -55,7 +55,7 @@ public class OrderFormData extends AbstractFormData {
         return getFieldByClass(Title.class);
     }
 
-    public static class Item extends AbstractValueFieldData<Long> {
+    public static class Item extends AbstractValueFieldData<OrderItemKey> {
         private static final long serialVersionUID = 1L;
     }
 

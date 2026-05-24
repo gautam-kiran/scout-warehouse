@@ -24,10 +24,14 @@ public class Product extends BaseEntity {
   @Column(name = NativeNames.COST)
   public BigDecimal cost;
 
+  @Column(name = NativeNames.PRODUCT_TYPE)
+  public Long productType;
+
   public static class NativeNames {
     public static final String PRODUCT = "PRODUCT";
     public static final String PRODUCT_NR = "PRODUCT_NR";
     public static final String NAME = "NAME";
     public static final String COST = "COST";
+    public static final String PRODUCT_TYPE = "PRODUCT_TYPE";
   }
 }

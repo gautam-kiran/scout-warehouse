@@ -21,6 +21,7 @@ import org.eclipse.scout.rt.client.ui.form.fields.bigdecimalfield.AbstractBigDec
 import org.eclipse.scout.rt.client.ui.form.fields.button.AbstractCancelButton;
 import org.eclipse.scout.rt.client.ui.form.fields.button.AbstractOkButton;
 import org.eclipse.scout.rt.client.ui.form.fields.groupbox.AbstractGroupBox;
+import org.eclipse.scout.rt.client.ui.form.fields.smartfield.AbstractSmartField;
 import org.eclipse.scout.rt.client.ui.form.fields.stringfield.AbstractStringField;
 import org.eclipse.scout.rt.client.ui.form.fields.tabbox.AbstractTabBox;
 import org.eclipse.scout.rt.client.ui.form.fields.tablefield.AbstractTableField;
@@ -83,6 +84,10 @@ public class ProductForm extends AbstractForm {
     return getFieldByClass(GroupBox.ProductDetailBox.class);
   }
 
+  public GroupBox.ProductDetailBox.ProductTypeField getProductTypeField() {
+    return getFieldByClass(GroupBox.ProductDetailBox.ProductTypeField.class);
+  }
+
   public GroupBox.ProductDetailBox.UnitsField getUnitsField() {
     return getFieldByClass(GroupBox.ProductDetailBox.UnitsField.class);
   }
@@ -127,6 +132,19 @@ public class ProductForm extends AbstractForm {
           @Override
           protected boolean getConfiguredMandatory() {
             return true;
+          }
+        }
+
+        @Order(1500)
+        public class ProductTypeField extends AbstractSmartField<Long> {
+          @Override
+          protected String getConfiguredLabel() {
+            return TEXTS.get("ProductType");
+          }
+
+          @Override
+          protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+            return ProductTypeCodeType.class;
           }
         }
 

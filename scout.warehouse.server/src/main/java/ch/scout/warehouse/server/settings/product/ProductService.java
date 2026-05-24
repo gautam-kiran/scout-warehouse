@@ -129,7 +129,8 @@ public class ProductService implements IProductService,
     return new DualHashBidiMap<>(Map.of(
       ProductFormData.ProductNrProperty.class, Product.NativeNames.PRODUCT_NR,
       ProductFormData.Name.class, Product.NativeNames.NAME,
-      ProductFormData.Cost.class, Product.NativeNames.COST
+      ProductFormData.Cost.class, Product.NativeNames.COST,
+      ProductFormData.ProductType.class, Product.NativeNames.PRODUCT_TYPE
     ));
   }
 }

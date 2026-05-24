@@ -4,10 +4,7 @@ import ch.scout.warehouse.client.settings.item.AbstractItemTable;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.CancelButton;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.GroupBox;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.OkButton;
-import ch.scout.warehouse.shared.work.order.CreateOrderPermission;
-import ch.scout.warehouse.shared.work.order.IOrderService;
-import ch.scout.warehouse.shared.work.order.OrderFormData;
-import ch.scout.warehouse.shared.work.order.UpdateOrderPermission;
+import ch.scout.warehouse.shared.work.order.*;
 import org.eclipse.scout.rt.client.dto.FormData;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
@@ -26,6 +23,7 @@ import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.shared.CssClasses;
+import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
 
 @FormData(value = OrderFormData.class, sdkCommand = FormData.SdkCommand.CREATE)
 public class OrderForm extends AbstractForm {
@@ -200,10 +198,15 @@ public class OrderForm extends AbstractForm {
         }
 
         @Order(1000)
-        public class ItemField extends AbstractSmartField<Long> {
+        public class ItemField extends AbstractSmartField<OrderItemKey> {
           @Override
           protected String getConfiguredLabel() {
             return TEXTS.get("Item");
+          }
+
+          @Override
+          protected Class<? extends ILookupCall<OrderItemKey>> getConfiguredLookupCall() {
+            return OrderItemLookupCall.class;
           }
         }
 

@@ -2,12 +2,9 @@ package ch.scout.warehouse.server.work.order;
 
 import ch.scout.warehouse.server.db.persitance.IEntityTableCreateService;
 import ch.scout.warehouse.server.db.persitance.IEntityTableUpdateService;
-import ch.scout.warehouse.server.db.tables.BaseEntity;
 import ch.scout.warehouse.server.db.tables.BaseRepository;
 import ch.scout.warehouse.server.db.tables.orderitem.OrderItem;
 import ch.scout.warehouse.server.db.tables.orderitem.OrderItemRepository;
-import ch.scout.warehouse.server.db.tables.productvariant.ProductVariant;
-import ch.scout.warehouse.shared.settings.product.ProductFormData;
 import ch.scout.warehouse.shared.work.order.OrderFormData;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
