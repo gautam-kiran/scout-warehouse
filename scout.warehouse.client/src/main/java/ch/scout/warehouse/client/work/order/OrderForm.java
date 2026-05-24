@@ -6,8 +6,9 @@ import ch.scout.warehouse.client.work.order.OrderForm.MainBox.GroupBox;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.OkButton;
 import ch.scout.warehouse.shared.work.order.*;
 import org.eclipse.scout.rt.client.dto.FormData;
+import org.eclipse.scout.rt.client.ui.basic.table.ITableRow;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
-import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
+import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
 import org.eclipse.scout.rt.client.ui.form.AbstractForm;
 import org.eclipse.scout.rt.client.ui.form.AbstractFormHandler;
 import org.eclipse.scout.rt.client.ui.form.fields.button.AbstractCancelButton;
@@ -208,6 +209,22 @@ public class OrderForm extends AbstractForm {
           protected Class<? extends ILookupCall<OrderItemKey>> getConfiguredLookupCall() {
             return OrderItemLookupCall.class;
           }
+
+          @Override
+          protected void execChangedValue() {
+            OrderItemKey orderItemKey = getValue();
+            String text = getDisplayText();
+            Long itemKey = orderItemKey.getItemNr() == 0L ? null : orderItemKey.getItemNr();
+
+            ITableRow row = getItemTableField().getTable().addRow();
+            getItemTableField().getTable().getItemNrColumn().setValue(row, itemKey);
+            getItemTableField().getTable().getProductTypeColumn().setValue(row, orderItemKey.getOrderItemType());
+            getItemTableField().getTable().getProductNrColumn().setValue(row, orderItemKey.getProductNr());
+            getItemTableField().getTable().getVariantColumn().setValue(row, orderItemKey.getVariant());
+            getItemTableField().getTable().getItemNoColumn().setValue(row, orderItemKey.getItemNo());
+            getItemTableField().getTable().getDescriptionColumn().setValue(row, text);
+            getItemTableField().getTable().getAmountColumn().setValue(row, 1L);
+          }
         }
 
         @Order(2000)
@@ -226,8 +243,16 @@ public class OrderForm extends AbstractForm {
           @ClassId("2686fd6b-b83c-4f86-9858-5d7003443382")
           public class Table extends AbstractItemTable {
 
+            public AmountColumn getAmountColumn() {
+              return getColumnSet().getColumnByClass(AmountColumn.class);
+            }
+
             public OrderItemColumn getOrderItemColumn() {
               return getColumnSet().getColumnByClass(OrderItemColumn.class);
+            }
+
+            public UnitColumn getUnitColumn() {
+              return getColumnSet().getColumnByClass(UnitColumn.class);
             }
 
             @Order(1000)
@@ -238,6 +263,36 @@ public class OrderForm extends AbstractForm {
               }
             }
 
+            @Order(2000)
+            public class AmountColumn extends AbstractLongColumn {
+              @Override
+              protected String getConfiguredHeaderText() {
+                return TEXTS.get("Amount");
+              }
+
+              @Override
+              protected int getConfiguredWidth() {
+                return 100;
+              }
+
+              @Override
+              protected boolean getConfiguredEditable() {
+                return true;
+              }
+            }
+
+            @Order(2001)
+            public class UnitColumn extends AbstractSmartColumn<Long> {
+              @Override
+              protected String getConfiguredHeaderText() {
+                return TEXTS.get("Unit");
+              }
+
+              @Override
+              protected int getConfiguredWidth() {
+                return 100;
+              }
+            }
           }
         }
       }

@@ -100,16 +100,22 @@ public class OrderFormData extends AbstractFormData {
             private static final long serialVersionUID = 1L;
             public static final String itemNr = "itemNr";
             public static final String orderItem = "orderItem";
+            public static final String productNr = "productNr";
+            public static final String productType = "productType";
+            public static final String amount = "amount";
             public static final String itemNo = "itemNo";
+            public static final String unit = "unit";
             public static final String description = "description";
             public static final String variant = "variant";
-            public static final String status = "status";
             private Long m_itemNr;
             private Long m_orderItem;
+            private Long m_productNr;
+            private Long m_productType;
+            private Long m_amount;
             private String m_itemNo;
+            private Long m_unit;
             private String m_description;
             private Long m_variant;
-            private Long m_status;
 
             public Long getItemNr() {
                 return m_itemNr;
@@ -127,12 +133,44 @@ public class OrderFormData extends AbstractFormData {
                 m_orderItem = newOrderItem;
             }
 
+            public Long getProductNr() {
+                return m_productNr;
+            }
+
+            public void setProductNr(Long newProductNr) {
+                m_productNr = newProductNr;
+            }
+
+            public Long getProductType() {
+                return m_productType;
+            }
+
+            public void setProductType(Long newProductType) {
+                m_productType = newProductType;
+            }
+
+            public Long getAmount() {
+                return m_amount;
+            }
+
+            public void setAmount(Long newAmount) {
+                m_amount = newAmount;
+            }
+
             public String getItemNo() {
                 return m_itemNo;
             }
 
             public void setItemNo(String newItemNo) {
                 m_itemNo = newItemNo;
+            }
+
+            public Long getUnit() {
+                return m_unit;
+            }
+
+            public void setUnit(Long newUnit) {
+                m_unit = newUnit;
             }
 
             public String getDescription() {
@@ -149,14 +187,6 @@ public class OrderFormData extends AbstractFormData {
 
             public void setVariant(Long newVariant) {
                 m_variant = newVariant;
-            }
-
-            public Long getStatus() {
-                return m_status;
-            }
-
-            public void setStatus(Long newStatus) {
-                m_status = newStatus;
             }
         }
     }

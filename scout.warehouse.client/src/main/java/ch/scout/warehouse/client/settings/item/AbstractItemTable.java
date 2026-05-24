@@ -1,6 +1,7 @@
 package ch.scout.warehouse.client.settings.item;
 
 import ch.scout.warehouse.shared.settings.item.ItemStatusCodeType;
+import ch.scout.warehouse.shared.settings.product.ProductTypeCodeType;
 import ch.scout.warehouse.shared.settings.product.VariantCodeType;
 import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
@@ -24,9 +25,15 @@ public abstract class AbstractItemTable extends AbstractTable {
     return getColumnSet().getColumnByClass(ItemNrColumn.class);
   }
 
-  public StatusColumn getStatusColumn() {
-    return getColumnSet().getColumnByClass(StatusColumn.class);
+  public ProductNrColumn getProductNrColumn() {
+    return getColumnSet().getColumnByClass(ProductNrColumn.class);
   }
+
+  public ProductTypeColumn getProductTypeColumn() {
+    return getColumnSet().getColumnByClass(ProductTypeColumn.class);
+  }
+
+
 
   public VariantColumn getVariantColumn() {
     return getColumnSet().getColumnByClass(VariantColumn.class);
@@ -38,6 +45,27 @@ public abstract class AbstractItemTable extends AbstractTable {
     @Override
     protected boolean getConfiguredDisplayable() {
       return false;
+    }
+  }
+
+  @Order(1500)
+  public class ProductNrColumn extends AbstractLongColumn {
+    @Override
+    protected boolean getConfiguredDisplayable() {
+      return false;
+    }
+  }
+
+  @Order(1750)
+  public class ProductTypeColumn extends AbstractSmartColumn<Long> {
+    @Override
+    protected boolean getConfiguredDisplayable() {
+      return false;
+    }
+
+    @Override
+    protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+      return ProductTypeCodeType.class;
     }
   }
 
@@ -85,21 +113,5 @@ public abstract class AbstractItemTable extends AbstractTable {
     }
   }
 
-  @Order(5000)
-  public class StatusColumn extends AbstractSmartColumn<Long> {
-    @Override
-    protected String getConfiguredHeaderText() {
-      return TEXTS.get("Status");
-    }
 
-    @Override
-    protected int getConfiguredWidth() {
-      return 100;
-    }
-
-    @Override
-    protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
-      return ItemStatusCodeType.class;
-    }
-  }
 }

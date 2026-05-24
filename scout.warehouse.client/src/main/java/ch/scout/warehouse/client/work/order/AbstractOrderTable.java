@@ -2,6 +2,7 @@ package ch.scout.warehouse.client.work.order;
 
 import ch.scout.warehouse.shared.Icons;
 import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
+import org.eclipse.scout.rt.client.ui.action.menu.IMenu;
 import org.eclipse.scout.rt.client.ui.action.menu.IMenuType;
 import org.eclipse.scout.rt.client.ui.action.menu.TableMenuType;
 import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
@@ -33,6 +34,11 @@ public abstract class AbstractOrderTable extends AbstractTable {
 
   public StatusColumn getStatusColumn() {
     return getColumnSet().getColumnByClass(StatusColumn.class);
+  }
+
+  @Override
+  protected Class<? extends IMenu> getConfiguredDefaultMenu() {
+    return EditOrderMenu.class;
   }
 
   @Order(1000)

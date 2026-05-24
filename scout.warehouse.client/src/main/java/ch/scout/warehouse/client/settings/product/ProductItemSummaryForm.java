@@ -3,6 +3,7 @@ package ch.scout.warehouse.client.settings.product;
 import ch.scout.warehouse.client.settings.item.AbstractItemTable;
 import ch.scout.warehouse.client.settings.item.ItemForm;
 import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.settings.item.ItemStatusCodeType;
 import ch.scout.warehouse.shared.settings.product.IProductService;
 import ch.scout.warehouse.shared.settings.product.ProductItemSummaryFormData;
 import org.eclipse.scout.rt.client.dto.FormData;
@@ -23,6 +24,7 @@ import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
+import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 
 import java.util.Set;
 
@@ -253,6 +255,27 @@ public class ProductItemSummaryForm extends AbstractForm {
 
           @ClassId("898f1583-74df-4c74-b2f8-b5b93eb45a64")
           public class Table extends AbstractItemTable {
+            public StatusColumn getStatusColumn() {
+              return getColumnSet().getColumnByClass(StatusColumn.class);
+            }
+
+            @Order(5000)
+            public class StatusColumn extends AbstractSmartColumn<Long> {
+              @Override
+              protected String getConfiguredHeaderText() {
+                return TEXTS.get("Status");
+              }
+
+              @Override
+              protected int getConfiguredWidth() {
+                return 100;
+              }
+
+              @Override
+              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+                return ItemStatusCodeType.class;
+              }
+            }
 
             @Order(1000)
             public class NewItemMenu extends AbstractMenu {

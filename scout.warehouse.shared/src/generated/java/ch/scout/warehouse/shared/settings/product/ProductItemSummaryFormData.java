@@ -107,11 +107,15 @@ public class ProductItemSummaryFormData extends AbstractFormData {
         public static class ItemTableRowData extends AbstractTableRowData {
             private static final long serialVersionUID = 1L;
             public static final String itemNr = "itemNr";
+            public static final String productNr = "productNr";
+            public static final String productType = "productType";
             public static final String itemNo = "itemNo";
             public static final String description = "description";
             public static final String variant = "variant";
             public static final String status = "status";
             private Long m_itemNr;
+            private Long m_productNr;
+            private Long m_productType;
             private String m_itemNo;
             private String m_description;
             private Long m_variant;
@@ -123,6 +127,22 @@ public class ProductItemSummaryFormData extends AbstractFormData {
 
             public void setItemNr(Long newItemNr) {
                 m_itemNr = newItemNr;
+            }
+
+            public Long getProductNr() {
+                return m_productNr;
+            }
+
+            public void setProductNr(Long newProductNr) {
+                m_productNr = newProductNr;
+            }
+
+            public Long getProductType() {
+                return m_productType;
+            }
+
+            public void setProductType(Long newProductType) {
+                m_productType = newProductType;
             }
 
             public String getItemNo() {

@@ -56,9 +56,11 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
     return queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
         product.productType.when(ProductTypeCodeType.SpecificCode.ID)
           .then(item.itemNr)
-          .otherwise(product.productNr),
+          .otherwise(0L),
         product.productNr,
         product.productType,
+        item.variantNr,
+        item.itemNo,
         item.description.coalesce(product.name).append(" (").append(ucText.text).append(")")
       ))
       .from(item)
