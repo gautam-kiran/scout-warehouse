@@ -3,6 +3,7 @@ package ch.scout.warehouse.server.work.order;
 import ch.scout.warehouse.server.db.DB;
 import ch.scout.warehouse.server.db.tables.article.QItem;
 import ch.scout.warehouse.server.db.tables.product.QProduct;
+import ch.scout.warehouse.server.db.tables.productunit.QProductUnit;
 import ch.scout.warehouse.server.db.tables.productvariant.QProductVariant;
 import ch.scout.warehouse.server.db.tables.uctext.QUcText;
 import ch.scout.warehouse.shared.common.LanguageCodeType;
@@ -28,7 +29,9 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
   QProduct product = new QProduct("product");
   QProductVariant variant = new QProductVariant("qv");
   QItem item = new QItem("item");
-  QUcText ucText = new QUcText("uct");
+  QUcText variantText = new QUcText("variantText");
+  QProductUnit productUnit = new QProductUnit("productUnit");
+  QUcText productUnitText = new QUcText("productUnitText");
 
   @Override
   public List<? extends ILookupRow<OrderItemKey>> getDataByKey(ILookupCall<OrderItemKey> call) {
@@ -61,16 +64,20 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
         product.productType,
         item.variantNr,
         item.itemNo,
-        item.description.coalesce(product.name).append(" (").append(ucText.text).append(")")
-      ))
+        item.description.coalesce(product.name)
+          .append(" - ").append(productUnitText.text).append(" ")
+          .append(" (").append(variantText.text.coalesce("")).append(")")
+        )
+      )
       .from(item)
       .leftJoin(product).on(item.productNr.eq(item.productNr))
+      .leftJoin(productUnit).on(productUnit.productNr.eq(product.productNr).and(product.statusUid.eq(StatusCodeType.ActiveCode.ID)))
+      .leftJoin(productUnitText).on(productUnit.unitNr.eq(productUnitText.ucUid).and(productUnitText.lannguageCode.eq(languageId)))
       .leftJoin(variant).on(item.variantNr.eq(variant.variantNr).and(variant.statusUid.eq(StatusCodeType.ActiveCode.ID)))
-      .leftJoin(ucText).on(variant.variantNr.eq(ucText.ucUid).and(ucText.lannguageCode.eq(languageId)))
+      .leftJoin(variantText).on(variant.variantNr.eq(variantText.ucUid).and(variantText.lannguageCode.eq(languageId)))
       .where(
         item.statusUid.eq(StatusCodeType.ActiveCode.ID)
           .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
-          .and(variant.statusUid.eq(StatusCodeType.ActiveCode.ID))
           .and(condition)
       )
       .fetch();
