@@ -5,6 +5,7 @@ import ch.scout.warehouse.client.work.order.OrderForm.MainBox.CancelButton;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.GroupBox;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.OkButton;
 import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.settings.product.ProductTypeCodeType;
 import ch.scout.warehouse.shared.settings.product.UnitCodeType;
 import ch.scout.warehouse.shared.work.order.*;
 import org.eclipse.scout.rt.client.dto.FormData;
@@ -29,10 +30,13 @@ import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
+import org.eclipse.scout.rt.platform.util.MutablePair;
+import org.eclipse.scout.rt.platform.util.Pair;
 import org.eclipse.scout.rt.shared.CssClasses;
 import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -239,15 +243,28 @@ public class OrderForm extends AbstractForm {
             getItemTableField().getTable().getUnitColumn().setValue(row, orderItemKey.getUnit());
             return null;
           }
+
           @Override
           protected void execPrepareLookup(ILookupCall<OrderItemKey> call) {
-            Map<Long, Long> orderItems = getItemTableField().getTable().getRows()
+            Map<Pair<Long,Long>, Long> productAmount = getItemTableField().getTable().getRows()
               .stream()
+              .filter(row -> getItemTableField().getTable().getProductTypeColumn().getValue(row) != ProductTypeCodeType.SpecificCode.ID)
               .collect(Collectors.toMap(
-                getItemTableField().getTable().getItemNrColumn()::getValue,
-                getItemTableField().getTable().getAmountColumn()::getValue)
+                this::toOrderItemPair,
+                getItemTableField().getTable().getAmountColumn()::getValue,
+                Long::sum)
               );
-            ((OrderItemLookupCall)call).setOrderItems(orderItems);
+            ((OrderItemLookupCall) call).setProductAmount(productAmount);
+            List<Long> itemNrs = getItemTableField().getTable().getRows()
+              .stream()
+              .filter(row -> getItemTableField().getTable().getProductTypeColumn().getValue(row) != ProductTypeCodeType.FelxibleCode.ID)
+              .map(row -> getItemTableField().getTable().getItemNrColumn().getValue(row))
+              .toList();
+            ((OrderItemLookupCall) call).setItemNrs(itemNrs);
+          }
+
+          private Pair<Long,Long> toOrderItemPair(ITableRow row) {
+            return new MutablePair<>(getItemTableField().getTable().getProductNrColumn().getValue(row), getItemTableField().getTable().getVariantColumn().getValue(row));
           }
         }
 

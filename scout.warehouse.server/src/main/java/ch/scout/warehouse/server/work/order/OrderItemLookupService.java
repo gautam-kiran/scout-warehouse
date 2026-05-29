@@ -13,20 +13,24 @@ import ch.scout.warehouse.shared.work.order.IOrderItemLookupService;
 import ch.scout.warehouse.shared.work.order.OrderItemKey;
 import ch.scout.warehouse.shared.work.order.OrderItemLookupCall;
 import ch.scout.warehouse.shared.work.order.OrderItemRow;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.nls.NlsLocale;
+import org.eclipse.scout.rt.platform.util.Pair;
 import org.eclipse.scout.rt.server.services.lookup.AbstractLookupService;
 import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
 import org.eclipse.scout.rt.shared.services.lookup.ILookupRow;
 
 import java.util.List;
+import java.util.Map;
 
 public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> implements IOrderItemLookupService {
   JPAQueryFactory queryFactory = new JPAQueryFactory(JPQLTemplates.DEFAULT, DB.getEntityManager());
@@ -59,24 +63,23 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
   }
 
   private List<OrderItemRow> getData(Predicate condition, OrderItemLookupCall lookupCall) {
-    List<Long> itemNrs = lookupCall.getOrderItems().keySet().stream().toList();
     Long languageId = BEANS.get(LanguageCodeType.class).getCodeByExtKey(NlsLocale.get().getLanguage()).getId();
     List<OrderItemRow> rows = queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
-        product.productNr,
-        product.productType,
-        variant.variantNr,
-        productUnit.unitNr,
-        product.name
-          .append(
-            new CaseBuilder().when(productUnit.amount.gt(1L))
-              .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
-              .otherwise("")
-          )
-          .append(
-            new CaseBuilder().when(item.variantNr.isNotNull())
-              .then(Expressions.asString(" (").append(variantText.text).append(")"))
-              .otherwise("")
-          )
+          product.productNr,
+          product.productType,
+          variant.variantNr,
+          productUnit.unitNr,
+          product.name
+            .append(
+              new CaseBuilder().when(productUnit.amount.gt(1L))
+                .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
+                .otherwise("")
+            )
+            .append(
+              new CaseBuilder().when(item.variantNr.isNotNull())
+                .then(Expressions.asString(" (").append(variantText.text).append(")"))
+                .otherwise("")
+            )
         )
       )
       .from(item)
@@ -88,16 +91,9 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
       .where(
         item.statusUid.eq(StatusCodeType.ActiveCode.ID)
           .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
-          .and(
-            JPAExpressions.select(
-                item.itemNr.count().subtract((long) itemNrs.size()))
-              .from(item)
-              .where(
-                item.productNr.eq(product.productNr)
-                  .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
-              ).gt(0L)
-          )
+          .andAnyOf(createAmountConditions(lookupCall.getProductAmount(), productUnit.amount))
           .and(product.productType.eq(ProductTypeCodeType.FelxibleCode.ID))
+          .and(createAmountCondition(product.productNr, productUnit.amount, 0L, item.variantNr))
           .and(condition)
       )
       .fetch();
@@ -133,11 +129,31 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
         item.statusUid.eq(StatusCodeType.ActiveCode.ID)
           .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
           .and(product.productType.eq(ProductTypeCodeType.SpecificCode.ID))
-          .and(item.itemNr.notIn(itemNrs))
-          .and(item.itemNr.isNotNull())
+          .and(item.itemNr.notIn(lookupCall.getItemNrs()))
           .and(condition)
       )
       .fetch());
     return rows;
+  }
+
+  private Predicate[] createAmountConditions(Map<Pair<Long, Long>, Long> productAmount, NumberPath<Long> amount) {
+    return productAmount.entrySet().stream().map(entry -> {
+        Long variantNr = entry.getKey().getRight();
+        Expression<Long> variantExpression = variantNr == null ? null : Expressions.constant(variantNr);
+        return createAmountCondition(Expressions.constant(entry.getKey().getLeft()), amount, entry.getValue(), variantExpression);
+      }
+    ).toArray(Predicate[]::new);
+  }
+
+  private Predicate createAmountCondition(Expression<Long> productNr, Expression<Long> amount, Long subtraction, Expression<Long> variantNr) {
+    Predicate variantCondition = variantNr != null ? item.variantNr.eq(variantNr) : item.variantNr.isNull();
+    return JPAExpressions.select(
+        item.itemNr.count().subtract(subtraction))
+      .from(item)
+      .where(
+        item.productNr.eq(productNr)
+          .and(variantCondition)
+          .and(item.statusUid.eq(StatusCodeType.ActiveCode.ID))
+      ).goe(amount);
   }
 }
