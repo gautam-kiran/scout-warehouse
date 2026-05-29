@@ -4,8 +4,13 @@ import ch.scout.warehouse.client.settings.item.AbstractItemTable;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.CancelButton;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.GroupBox;
 import ch.scout.warehouse.client.work.order.OrderForm.MainBox.OkButton;
+import ch.scout.warehouse.shared.Icons;
+import ch.scout.warehouse.shared.settings.product.UnitCodeType;
 import ch.scout.warehouse.shared.work.order.*;
 import org.eclipse.scout.rt.client.dto.FormData;
+import org.eclipse.scout.rt.client.ui.action.menu.AbstractMenu;
+import org.eclipse.scout.rt.client.ui.action.menu.IMenuType;
+import org.eclipse.scout.rt.client.ui.action.menu.TableMenuType;
 import org.eclipse.scout.rt.client.ui.basic.table.ITableRow;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractLongColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
@@ -23,8 +28,14 @@ import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.platform.classid.ClassId;
 import org.eclipse.scout.rt.platform.text.TEXTS;
+import org.eclipse.scout.rt.platform.util.CollectionUtility;
 import org.eclipse.scout.rt.shared.CssClasses;
+import org.eclipse.scout.rt.shared.services.common.code.ICodeType;
 import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @FormData(value = OrderFormData.class, sdkCommand = FormData.SdkCommand.CREATE)
 public class OrderForm extends AbstractForm {
@@ -224,6 +235,18 @@ public class OrderForm extends AbstractForm {
             getItemTableField().getTable().getItemNoColumn().setValue(row, orderItemKey.getItemNo());
             getItemTableField().getTable().getDescriptionColumn().setValue(row, text);
             getItemTableField().getTable().getAmountColumn().setValue(row, 1L);
+            getItemTableField().getTable().getUnitColumn().setValue(row, orderItemKey.getUnit());
+          }
+
+          @Override
+          protected void execPrepareLookup(ILookupCall<OrderItemKey> call) {
+            Map<Long, Long> orderItems = getItemTableField().getTable().getRows()
+              .stream()
+              .collect(Collectors.toMap(
+                getItemTableField().getTable().getItemNrColumn()::getValue,
+                getItemTableField().getTable().getAmountColumn()::getValue)
+              );
+            ((OrderItemLookupCall)call).setOrderItems(orderItems);
           }
         }
 
@@ -279,6 +302,11 @@ public class OrderForm extends AbstractForm {
               protected boolean getConfiguredEditable() {
                 return true;
               }
+
+              @Override
+              protected boolean getConfiguredMandatory() {
+                return true;
+              }
             }
 
             @Order(2001)
@@ -291,6 +319,44 @@ public class OrderForm extends AbstractForm {
               @Override
               protected int getConfiguredWidth() {
                 return 100;
+              }
+
+              @Override
+              protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
+                return UnitCodeType.class;
+              }
+
+              @Override
+              protected boolean getConfiguredEditable() {
+                return true;
+              }
+
+              @Override
+              protected boolean getConfiguredMandatory() {
+                return true;
+              }
+            }
+
+            @Order(1000)
+            public class DeleteMenu extends AbstractMenu {
+              @Override
+              protected String getConfiguredText() {
+                return TEXTS.get("DeleteMenu");
+              }
+
+              @Override
+              protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+                return CollectionUtility.hashSet(TableMenuType.SingleSelection, TableMenuType.MultiSelection);
+              }
+
+              @Override
+              protected String getConfiguredIconId() {
+                return Icons.Delete;
+              }
+
+              @Override
+              protected void execAction() {
+                getTable().deleteRows(getTable().getSelectedRows());
               }
             }
           }

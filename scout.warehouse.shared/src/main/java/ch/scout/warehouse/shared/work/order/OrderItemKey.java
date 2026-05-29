@@ -8,17 +8,19 @@ public class OrderItemKey implements Serializable {
   private Long orderItemType;
   private Long variant;
   private String itemNo;
+  private Long unit;
 
   public OrderItemKey(){
 
   }
 
-  public OrderItemKey(Long itemNr, Long productNr, Long orderItemType, Long vairant,String itemNo) {
+  public OrderItemKey(Long itemNr, Long productNr, Long orderItemType, Long vairant,String itemNo, Long unit) {
     this.itemNr = itemNr;
     this.productNr = productNr;
     this.orderItemType = orderItemType;
     this.variant = vairant;
     this.itemNo = itemNo;
+    this.unit = unit;
   }
 
   public Long getProductNr() {
@@ -59,5 +61,13 @@ public class OrderItemKey implements Serializable {
 
   public void setItemNo(String itemNo) {
     this.itemNo = itemNo;
+  }
+
+  public Long getUnit() {
+    return unit;
+  }
+
+  public void setUnit(Long unit) {
+    this.unit = unit;
   }
 }

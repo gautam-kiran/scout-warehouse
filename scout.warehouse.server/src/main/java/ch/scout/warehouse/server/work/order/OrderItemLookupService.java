@@ -11,9 +11,11 @@ import ch.scout.warehouse.shared.common.StatusCodeType;
 import ch.scout.warehouse.shared.settings.product.ProductTypeCodeType;
 import ch.scout.warehouse.shared.work.order.IOrderItemLookupService;
 import ch.scout.warehouse.shared.work.order.OrderItemKey;
+import ch.scout.warehouse.shared.work.order.OrderItemLookupCall;
 import ch.scout.warehouse.shared.work.order.OrderItemRow;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.eclipse.scout.rt.platform.BEANS;
@@ -35,18 +37,18 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
 
   @Override
   public List<? extends ILookupRow<OrderItemKey>> getDataByKey(ILookupCall<OrderItemKey> call) {
-    return call.getKey().getOrderItemType() == ProductTypeCodeType.SpecificCode.ID ? getData(item.itemNr.eq(call.getKey().getItemNr())) : getData(product.productNr.eq(call.getKey().getProductNr()));
+    return call.getKey().getOrderItemType() == ProductTypeCodeType.SpecificCode.ID ? getData(item.itemNr.eq(call.getKey().getItemNr()), (OrderItemLookupCall) call) : getData(product.productNr.eq(call.getKey().getProductNr()), (OrderItemLookupCall) call);
   }
 
   @Override
   public List<? extends ILookupRow<OrderItemKey>> getDataByText(ILookupCall<OrderItemKey> call) {
     String text = call.getText().replace(call.getWildcard(), "%").toLowerCase();
-    return getData(item.description.toLowerCase().like(text).or(product.name.toLowerCase().like(text)));
+    return getData(item.description.toLowerCase().like(text).or(product.name.toLowerCase().like(text)), (OrderItemLookupCall) call);
   }
 
   @Override
   public List<? extends ILookupRow<OrderItemKey>> getDataByAll(ILookupCall<OrderItemKey> call) {
-    return getData(null);
+    return getData(null, (OrderItemLookupCall) call);
   }
 
   @Override
@@ -54,19 +56,21 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
     return List.of();
   }
 
-  private List<OrderItemRow> getData(Predicate condition) {
+  private List<OrderItemRow> getData(Predicate condition, OrderItemLookupCall lookupCall) {
+    List<Long> itemNrs = lookupCall.getOrderItems().keySet().stream().toList();
     Long languageId = BEANS.get(LanguageCodeType.class).getCodeByExtKey(NlsLocale.get().getLanguage()).getId();
     return queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
-        product.productType.when(ProductTypeCodeType.SpecificCode.ID)
-          .then(item.itemNr)
-          .otherwise(0L),
-        product.productNr,
-        product.productType,
-        item.variantNr,
-        item.itemNo,
-        item.description.coalesce(product.name)
-          .append(" - ").append(productUnitText.text).append(" ")
-          .append(" (").append(variantText.text.coalesce("")).append(")")
+          product.productType.when(ProductTypeCodeType.SpecificCode.ID)
+            .then(item.itemNr)
+            .otherwise(0L),
+          product.productNr,
+          product.productType,
+          item.variantNr,
+          item.itemNo,
+          productUnit.unitNr,
+          item.description.coalesce(product.name)
+            .append(" - ").append(productUnitText.text).append(" ")
+            .append(" (").append(variantText.text.coalesce("")).append(")")
         )
       )
       .from(item)
@@ -78,6 +82,20 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
       .where(
         item.statusUid.eq(StatusCodeType.ActiveCode.ID)
           .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
+          .and(
+            product.productType.eq(ProductTypeCodeType.SpecificCode.ID)
+              .and(item.itemNr.notIn(itemNrs))
+              .or(
+                JPAExpressions.select(
+                  item.itemNr.count().subtract((long) itemNrs.size()))
+                  .from(item)
+                  .where(
+                    item.productNr.eq(product.productNr)
+                    .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
+                  ).gt(0L)
+                  .and(product.productType.eq(ProductTypeCodeType.FelxibleCode.ID))
+              )
+          )
           .and(condition)
       )
       .fetch();
