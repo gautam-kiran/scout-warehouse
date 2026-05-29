@@ -7,6 +7,10 @@ public class OrderItemRow extends LookupRow<OrderItemKey> {
     super(new OrderItemKey(itemNr, productNr, orderItemType, variant, itemNo, unit), text);
   }
 
+  public OrderItemRow(Long productNr, Long orderItemType, Long variant,  Long unit,String text) {
+    super(new OrderItemKey(null, productNr, orderItemType, variant, null, unit), text);
+  }
+
   public OrderItemRow(OrderItemKey key, String text) {
     super(key, text);
   }

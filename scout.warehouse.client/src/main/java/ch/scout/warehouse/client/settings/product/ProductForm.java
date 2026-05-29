@@ -146,6 +146,11 @@ public class ProductForm extends AbstractForm {
           protected Class<? extends ICodeType<?, Long>> getConfiguredCodeType() {
             return ProductTypeCodeType.class;
           }
+
+          @Override
+          protected boolean getConfiguredMandatory() {
+            return true;
+          }
         }
 
         @Order(1500)

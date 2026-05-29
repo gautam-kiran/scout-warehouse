@@ -227,10 +227,9 @@ public class OrderForm extends AbstractForm {
               return null;
             }
             String text = getDisplayText();
-            Long itemKey = orderItemKey.getItemNr() == 0L ? null : orderItemKey.getItemNr();
 
             ITableRow row = getItemTableField().getTable().addRow();
-            getItemTableField().getTable().getItemNrColumn().setValue(row, itemKey);
+            getItemTableField().getTable().getItemNrColumn().setValue(row, orderItemKey.getItemNr());
             getItemTableField().getTable().getProductTypeColumn().setValue(row, orderItemKey.getOrderItemType());
             getItemTableField().getTable().getProductNrColumn().setValue(row, orderItemKey.getProductNr());
             getItemTableField().getTable().getVariantColumn().setValue(row, orderItemKey.getVariant());
