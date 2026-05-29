@@ -222,8 +222,10 @@ public class OrderForm extends AbstractForm {
           }
 
           @Override
-          protected void execChangedValue() {
-            OrderItemKey orderItemKey = getValue();
+          protected OrderItemKey execValidateValue(OrderItemKey orderItemKey) {
+            if (orderItemKey == null) {
+              return null;
+            }
             String text = getDisplayText();
             Long itemKey = orderItemKey.getItemNr() == 0L ? null : orderItemKey.getItemNr();
 
@@ -236,8 +238,8 @@ public class OrderForm extends AbstractForm {
             getItemTableField().getTable().getDescriptionColumn().setValue(row, text);
             getItemTableField().getTable().getAmountColumn().setValue(row, 1L);
             getItemTableField().getTable().getUnitColumn().setValue(row, orderItemKey.getUnit());
+            return null;
           }
-
           @Override
           protected void execPrepareLookup(ILookupCall<OrderItemKey> call) {
             Map<Long, Long> orderItems = getItemTableField().getTable().getRows()
