@@ -15,6 +15,8 @@ import ch.scout.warehouse.shared.work.order.OrderItemLookupCall;
 import ch.scout.warehouse.shared.work.order.OrderItemRow;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -60,13 +62,21 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
     List<Long> itemNrs = lookupCall.getOrderItems().keySet().stream().toList();
     Long languageId = BEANS.get(LanguageCodeType.class).getCodeByExtKey(NlsLocale.get().getLanguage()).getId();
     List<OrderItemRow> rows = queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
-          product.productNr,
-          product.productType,
-          variant.variantNr,
-          productUnit.unitNr,
-          product.name
-            .append(" - ").append(productUnitText.text).append(" ")
-            .append(" (").append(variantText.text.coalesce("")).append(")")
+        product.productNr,
+        product.productType,
+        variant.variantNr,
+        productUnit.unitNr,
+        product.name
+          .append(
+            new CaseBuilder().when(productUnit.amount.gt(0L))
+              .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
+              .otherwise("")
+          )
+          .append(
+            new CaseBuilder().when(item.variantNr.isNotNull())
+              .then(Expressions.asString(" (").append(variantText.text).append(")"))
+              .otherwise("")
+          )
         )
       )
       .from(item)
@@ -101,8 +111,16 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
           item.itemNo,
           productUnit.unitNr,
           item.description.coalesce(product.name)
-            .append(" - ").append(productUnitText.text).append(" ")
-            .append(" (").append(variantText.text.coalesce("")).append(")")
+            .append(
+              new CaseBuilder().when(productUnit.amount.gt(0L))
+                .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
+                .otherwise("")
+            )
+            .append(
+              new CaseBuilder().when(item.variantNr.isNotNull())
+                .then(Expressions.asString(" (").append(variantText.text).append(")"))
+                .otherwise("")
+            )
         )
       )
       .from(item)
