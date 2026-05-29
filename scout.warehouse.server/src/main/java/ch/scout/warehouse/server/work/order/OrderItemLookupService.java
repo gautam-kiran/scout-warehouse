@@ -68,7 +68,7 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
         productUnit.unitNr,
         product.name
           .append(
-            new CaseBuilder().when(productUnit.amount.gt(0L))
+            new CaseBuilder().when(productUnit.amount.gt(1L))
               .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
               .otherwise("")
           )
@@ -112,7 +112,7 @@ public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> 
           productUnit.unitNr,
           item.description.coalesce(product.name)
             .append(
-              new CaseBuilder().when(productUnit.amount.gt(0L))
+              new CaseBuilder().when(productUnit.amount.gt(1L))
                 .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
                 .otherwise("")
             )
