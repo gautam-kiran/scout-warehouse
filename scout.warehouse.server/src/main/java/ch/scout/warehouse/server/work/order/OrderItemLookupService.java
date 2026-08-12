@@ -1,0 +1,159 @@
+package ch.scout.warehouse.server.work.order;
+
+import ch.scout.warehouse.server.db.DB;
+import ch.scout.warehouse.server.db.tables.article.QItem;
+import ch.scout.warehouse.server.db.tables.product.QProduct;
+import ch.scout.warehouse.server.db.tables.productunit.QProductUnit;
+import ch.scout.warehouse.server.db.tables.productvariant.QProductVariant;
+import ch.scout.warehouse.server.db.tables.uctext.QUcText;
+import ch.scout.warehouse.shared.common.LanguageCodeType;
+import ch.scout.warehouse.shared.common.StatusCodeType;
+import ch.scout.warehouse.shared.settings.product.ProductTypeCodeType;
+import ch.scout.warehouse.shared.work.order.IOrderItemLookupService;
+import ch.scout.warehouse.shared.work.order.OrderItemKey;
+import ch.scout.warehouse.shared.work.order.OrderItemLookupCall;
+import ch.scout.warehouse.shared.work.order.OrderItemRow;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLTemplates;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.eclipse.scout.rt.platform.BEANS;
+import org.eclipse.scout.rt.platform.nls.NlsLocale;
+import org.eclipse.scout.rt.platform.util.Pair;
+import org.eclipse.scout.rt.server.services.lookup.AbstractLookupService;
+import org.eclipse.scout.rt.shared.services.lookup.ILookupCall;
+import org.eclipse.scout.rt.shared.services.lookup.ILookupRow;
+
+import java.util.List;
+import java.util.Map;
+
+public class OrderItemLookupService extends AbstractLookupService<OrderItemKey> implements IOrderItemLookupService {
+  JPAQueryFactory queryFactory = new JPAQueryFactory(JPQLTemplates.DEFAULT, DB.getEntityManager());
+  QProduct product = new QProduct("product");
+  QProductVariant variant = new QProductVariant("qv");
+  QItem item = new QItem("item");
+  QUcText variantText = new QUcText("variantText");
+  QProductUnit productUnit = new QProductUnit("productUnit");
+  QUcText productUnitText = new QUcText("productUnitText");
+
+  @Override
+  public List<? extends ILookupRow<OrderItemKey>> getDataByKey(ILookupCall<OrderItemKey> call) {
+    return call.getKey().getOrderItemType() == ProductTypeCodeType.SpecificCode.ID ? getData(item.itemNr.eq(call.getKey().getItemNr()), (OrderItemLookupCall) call) : getData(product.productNr.eq(call.getKey().getProductNr()), (OrderItemLookupCall) call);
+  }
+
+  @Override
+  public List<? extends ILookupRow<OrderItemKey>> getDataByText(ILookupCall<OrderItemKey> call) {
+    String text = call.getText().replace(call.getWildcard(), "%").toLowerCase();
+    return getData(item.description.toLowerCase().like(text).or(product.name.toLowerCase().like(text)), (OrderItemLookupCall) call);
+  }
+
+  @Override
+  public List<? extends ILookupRow<OrderItemKey>> getDataByAll(ILookupCall<OrderItemKey> call) {
+    return getData(null, (OrderItemLookupCall) call);
+  }
+
+  @Override
+  public List<? extends ILookupRow<OrderItemKey>> getDataByRec(ILookupCall<OrderItemKey> call) {
+    return List.of();
+  }
+
+  private List<OrderItemRow> getData(Predicate condition, OrderItemLookupCall lookupCall) {
+    Long languageId = BEANS.get(LanguageCodeType.class).getCodeByExtKey(NlsLocale.get().getLanguage()).getId();
+    List<OrderItemRow> rows = queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
+          product.productNr,
+          product.productType,
+          variant.variantNr,
+          productUnit.unitNr,
+          product.name
+            .append(
+              new CaseBuilder().when(productUnit.amount.gt(1L))
+                .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
+                .otherwise("")
+            )
+            .append(
+              new CaseBuilder().when(item.variantNr.isNotNull())
+                .then(Expressions.asString(" (").append(variantText.text).append(")"))
+                .otherwise("")
+            )
+        )
+      )
+      .from(item)
+      .leftJoin(product).on(product.productNr.eq(item.productNr))
+      .leftJoin(productUnit).on(productUnit.productNr.eq(product.productNr).and(product.statusUid.eq(StatusCodeType.ActiveCode.ID)))
+      .leftJoin(productUnitText).on(productUnit.unitNr.eq(productUnitText.ucUid).and(productUnitText.lannguageCode.eq(languageId)))
+      .leftJoin(variant).on(item.variantNr.eq(variant.variantNr).and(variant.statusUid.eq(StatusCodeType.ActiveCode.ID)))
+      .leftJoin(variantText).on(variant.variantNr.eq(variantText.ucUid).and(variantText.lannguageCode.eq(languageId)))
+      .where(
+        item.statusUid.eq(StatusCodeType.ActiveCode.ID)
+          .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
+          .andAnyOf(createAmountConditions(lookupCall.getProductAmount(), productUnit.amount))
+          .and(product.productType.eq(ProductTypeCodeType.FelxibleCode.ID))
+          .and(createAmountCondition(product.productNr, productUnit.amount, 0L, item.variantNr))
+          .and(condition)
+      )
+      .fetch();
+
+
+    rows.addAll(queryFactory.selectDistinct(Projections.constructor(OrderItemRow.class,
+          item.itemNr,
+          product.productNr,
+          product.productType,
+          item.variantNr,
+          item.itemNo,
+          productUnit.unitNr,
+          item.description.coalesce(product.name)
+            .append(
+              new CaseBuilder().when(productUnit.amount.gt(1L))
+                .then(Expressions.asString(" - ").append(productUnitText.text).append(" "))
+                .otherwise("")
+            )
+            .append(
+              new CaseBuilder().when(item.variantNr.isNotNull())
+                .then(Expressions.asString(" (").append(variantText.text).append(")"))
+                .otherwise("")
+            )
+        )
+      )
+      .from(item)
+      .join(product).on(product.productNr.eq(item.productNr))
+      .leftJoin(productUnit).on(productUnit.productNr.eq(product.productNr).and(product.statusUid.eq(StatusCodeType.ActiveCode.ID)))
+      .leftJoin(productUnitText).on(productUnit.unitNr.eq(productUnitText.ucUid).and(productUnitText.lannguageCode.eq(languageId)))
+      .leftJoin(variant).on(item.variantNr.eq(variant.variantNr).and(variant.statusUid.eq(StatusCodeType.ActiveCode.ID)))
+      .leftJoin(variantText).on(variant.variantNr.eq(variantText.ucUid).and(variantText.lannguageCode.eq(languageId)))
+      .where(
+        item.statusUid.eq(StatusCodeType.ActiveCode.ID)
+          .and(product.statusUid.eq(StatusCodeType.ActiveCode.ID))
+          .and(product.productType.eq(ProductTypeCodeType.SpecificCode.ID))
+          .and(item.itemNr.notIn(lookupCall.getItemNrs()))
+          .and(condition)
+      )
+      .fetch());
+    return rows;
+  }
+
+  private Predicate[] createAmountConditions(Map<Pair<Long, Long>, Long> productAmount, NumberPath<Long> amount) {
+    return productAmount.entrySet().stream().map(entry -> {
+        Long variantNr = entry.getKey().getRight();
+        Expression<Long> variantExpression = variantNr == null ? null : Expressions.constant(variantNr);
+        return createAmountCondition(Expressions.constant(entry.getKey().getLeft()), amount, entry.getValue(), variantExpression);
+      }
+    ).toArray(Predicate[]::new);
+  }
+
+  private Predicate createAmountCondition(Expression<Long> productNr, Expression<Long> amount, Long subtraction, Expression<Long> variantNr) {
+    Predicate variantCondition = variantNr != null ? item.variantNr.eq(variantNr) : item.variantNr.isNull();
+    return JPAExpressions.select(
+        item.itemNr.count().subtract(subtraction))
+      .from(item)
+      .where(
+        item.productNr.eq(productNr)
+          .and(variantCondition)
+          .and(item.statusUid.eq(StatusCodeType.ActiveCode.ID))
+      ).goe(amount);
+  }
+}

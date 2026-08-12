@@ -43,6 +43,10 @@ public class ProductFormData extends AbstractFormData {
         return getPropertyByClass(ProductNrProperty.class);
     }
 
+    public ProductType getProductType() {
+        return getFieldByClass(ProductType.class);
+    }
+
     public Units getUnits() {
         return getFieldByClass(Units.class);
     }
@@ -60,6 +64,10 @@ public class ProductFormData extends AbstractFormData {
     }
 
     public static class ProductNrProperty extends AbstractPropertyData<Long> {
+        private static final long serialVersionUID = 1L;
+    }
+
+    public static class ProductType extends AbstractValueFieldData<Long> {
         private static final long serialVersionUID = 1L;
     }
 

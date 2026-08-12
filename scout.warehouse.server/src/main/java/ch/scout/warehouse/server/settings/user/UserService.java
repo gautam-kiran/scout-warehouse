@@ -36,6 +36,7 @@ public class UserService implements IUserService,
 
   JPAQueryFactory queryFactory = new JPAQueryFactory(JPQLTemplates.DEFAULT, DB.getEntityManager());
   QUserRole userRole = new QUserRole("userRole");
+  QUser user = new QUser("user");
 
   @Override
   public User createImpl(UserFormData formData, User entity) {
@@ -88,7 +89,6 @@ public class UserService implements IUserService,
   public UserTablePageData getUserTableData(SearchFilter filter) {
     UserTablePageData pageData = new UserTablePageData();
 
-    QUser user = new QUser("user");
     List<UserTablePageData.UserTableRowData> rowData = queryFactory.select(Projections.fields(
         UserTablePageData.UserTableRowData.class,
         user.userNr.as("m_" + UserTablePageData.UserTableRowData.userNr),
@@ -127,5 +127,13 @@ public class UserService implements IUserService,
       UserFormData.UserNrProperty.class, User.NativeNames.USER_NR,
       UserFormData.UserName.class, User.NativeNames.USERNAME
     ));
+  }
+
+  public Long getUserNrByUsername(String userName) {
+    return queryFactory
+      .select(user.userNr)
+      .from(user)
+      .where(user.username.equalsIgnoreCase(userName))
+      .fetchOne();
   }
 }
